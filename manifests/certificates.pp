@@ -1,6 +1,7 @@
 # Copyright (C) 2015, Wazuh Inc.
 # Wazuh repository installation
 class wazuh::certificates (
+  $certs_tmp_dir = '/tmp',
   $wazuh_repository = 'packages.wazuh.com',
   $wazuh_version = '4.14',
   $indexer_certs = [],
@@ -11,13 +12,13 @@ class wazuh::certificates (
 ) {
   file { 'Configure Wazuh Certificates config.yml':
     owner   => 'root',
-    path    => '/tmp/config.yml',
+    path    => "${certs_tmp_dir}/config.yml",
     group   => 'root',
     mode    => '0640',
     content => template('wazuh/wazuh_config_yml.erb'),
   }
 
-  file { '/tmp/wazuh-certs-tool.sh':
+  file { "${certs_tmp_dir}/wazuh-certs-tool.sh":
     ensure => file,
     source => "https://${wazuh_repository}/${wazuh_version}/wazuh-certs-tool.sh",
     owner  => 'root',
@@ -27,16 +28,16 @@ class wazuh::certificates (
 
   exec { 'Create Wazuh Certificates':
     path    => '/usr/bin:/bin',
-    command => 'bash /tmp/wazuh-certs-tool.sh --all',
-    creates => '/tmp/wazuh-certificates',
+    command => "bash ${certs_tmp_dir}/wazuh-certs-tool.sh --all",
+    creates => "${certs_tmp_dir}/wazuh-certificates",
     require => [
-      File['/tmp/wazuh-certs-tool.sh'],
-      File['/tmp/config.yml'],
+      File["${certs_tmp_dir}/wazuh-certs-tool.sh"],
+      File["${certs_tmp_dir}/config.yml"],
     ],
   }
   file { 'Copy all certificates into module':
     ensure  => 'directory',
-    source  => '/tmp/wazuh-certificates/',
+    source  => "${certs_tmp_dir}/wazuh-certificates/",
     recurse => 'remote',
     path    => "/etc/puppetlabs/code/environments/${environment}/modules/archive/files/",
     owner   => 'root',
