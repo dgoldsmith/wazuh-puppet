@@ -38,7 +38,7 @@ class wazuh::certificates (
     ensure  => 'directory',
     source  => '/tmp/wazuh-certificates/',
     recurse => 'remote',
-    path    => '/etc/puppetlabs/code/environments/production/modules/archive/files/',
+    path    => "/etc/puppetlabs/code/environments/${environment}/modules/archive/files/",
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
